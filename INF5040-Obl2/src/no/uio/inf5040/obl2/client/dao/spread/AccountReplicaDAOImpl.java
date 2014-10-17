@@ -78,8 +78,5 @@ public class AccountReplicaDAOImpl implements AccountReplicaDAO,
 	 */
 	public int getNumReplicas() {
 		return numReplicas;
-	}
-	
-	
-	
+	}	
 }

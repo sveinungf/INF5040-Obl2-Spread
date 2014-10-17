@@ -36,7 +36,7 @@ public class AccountReplicaClient {
 		String input;
 
 		while ((input = br.readLine()) != null) {
-			
+
 			String[] fields = input.split("\\s+");
 			String command = fields[0];
 			double argument = fields.length > 1 ? Double.parseDouble(fields[1])
@@ -46,7 +46,7 @@ public class AccountReplicaClient {
 				break;
 			}
 
-			else if(SLEEP.equals(command)) { 
+			else if (SLEEP.equals(command)) {
 				try {
 					Thread.sleep((long) argument);
 				} catch (InterruptedException e) {
@@ -54,33 +54,39 @@ public class AccountReplicaClient {
 					e.printStackTrace();
 				}
 			}
-			
-			else {			
+
+			else {
 				handleInput(command, argument);
 				// do stuff
 			}
 		}
 	}
-	
-	
+
 	public void handleInput(String command, double value) {
-		switch (command) {
-		case "balance":
-			System.out.println("Current balance: " + accountDAO.getBalance());
-			break;
+		try {
+			switch (command) {
+			case "balance":
+				System.out.println("Current balance: "
+						+ accountDAO.getBalance());
+				break;
 
-		case "deposit":
-			accountDAO.deposit(value);
-			break;
+			case "deposit":
+				accountDAO.deposit(value);
+				break;
 
-		case "withdraw":
-			accountDAO.withdraw(value);
-			break;
+			case "withdraw":
+				accountDAO.withdraw(value);
+				break;
 
-		case "addInterest":
-			accountDAO.addInterest(value);
-			break;
+			case "addInterest":
+				accountDAO.addInterest(value);
+				break;
+			}
+		} catch (Exception e) {
+			System.err.println("Exception: " + e.getMessage());
+			e.printStackTrace();
 		}
+
 	}
 
 	public static void main(String[] args) {
