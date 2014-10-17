@@ -1,76 +1,102 @@
 package no.uio.inf5040.obl2.client;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Random;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 
-import spread.SpreadConnection;
-import spread.SpreadException;
-import spread.SpreadGroup;
-import spread.SpreadMessage;
+import no.uio.inf5040.obl2.client.dao.AccountReplicaDAO;
+import no.uio.inf5040.obl2.client.dao.DAOException;
+import no.uio.inf5040.obl2.client.dao.spread.AccountReplicaDAOImpl;
 
 public class AccountReplicaClient {
 
-	public SpreadConnection connection;
-	public String connName;
+	private static final int ARG_SERVER_ADDRESS = 0;
+	private static final int ARG_ACCOUNT = 1;
+	private static final int ARG_REPLICAS = 2;
+	private static final int ARG_FILENAME = 3;
 
-	public void init() {
-		Random randomGenerator = new Random();
-		int randomInt = randomGenerator.nextInt(100);
-		connName = "CliNum-" + randomInt;
+	private static final String EXIT = "exit";
 
-		connection = new SpreadConnection();
-		try {
-			connection.connect(InetAddress.getByName("127.0.0.1"), 4803,
-					connName, false, false);
+	private AccountReplicaDAO accountReplica;
 
-			SpreadGroup group = new SpreadGroup();
-			group.join(connection, "testGroup");
+	public AccountReplicaClient(String host, int port, String accountName,
+			int numReplicas) throws DAOException {
 
-		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (SpreadException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
+		accountReplica = new AccountReplicaDAOImpl(host, port, accountName,
+				numReplicas);
 	}
 
-	public void sendMessage(String text) {
-		SpreadMessage message = new SpreadMessage();
+	private void readFrom(Reader in) throws IOException {
+		BufferedReader br = new BufferedReader(in);
 
-		message.setData(text.getBytes());
-		message.addGroup("testGroup");
-		message.setReliable();
+		String input;
 
-		try {
-			connection.multicast(message);
-		} catch (SpreadException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		while ((input = br.readLine()) != null) {
+			if (EXIT.equals(input)) {
+				break;
+			}
+
+			String[] fields = input.split("\\s+");
+			String command = fields[0];
+			double argument = fields.length > 1 ? Double.parseDouble(fields[1])
+					: 0.0;
+
+			// do stuff
 		}
-
 	}
 
 	public static void main(String[] args) {
-		System.out.println("Starting Client...");
-		AccountReplicaClient client = new AccountReplicaClient();
-		client.init();
-		System.out.println("Sending messages...");
+		if (args == null || args.length <= ARG_REPLICAS) {
+			System.out.println("Usage: java -jar client.jar <server address> "
+					+ "<account name> <number of replicas> [file name]");
+			return;
+		}
+
+		String[] serverFields = args[ARG_SERVER_ADDRESS].split(":");
+
+		if (serverFields.length != 2) {
+			System.out.println("Error: Server address must be hostname:port");
+			return;
+		}
+
+		String host = serverFields[0];
+		int port = Integer.parseInt(serverFields[1]);
+		String accountName = args[ARG_ACCOUNT];
+		int numReplicas = Integer.parseInt(args[ARG_REPLICAS]);
+		String filename = args.length > ARG_FILENAME ? args[ARG_FILENAME]
+				: null;
+
+		AccountReplicaClient client;
 		try {
-			Thread.sleep(2000);
-			client.sendMessage("Hello form client: " + client.connName);
-			Thread.sleep(50000);
-			client.sendMessage("Message 2.");
-			Thread.sleep(6000);
-			client.sendMessage("Message 3.");
-			Thread.sleep(10000);
-			client.sendMessage("Last Message.");
-		} catch (InterruptedException e) {
+			client = new AccountReplicaClient(host, port, accountName,
+					numReplicas);
+		} catch (DAOException e) {
+			e.printStackTrace();
+			return;
+		}
+
+		Reader in;
+
+		if (filename == null) {
+			System.out.println("Enter a command, or \"exit\" to exit.");
+			in = new InputStreamReader(System.in);
+		} else {
+			try {
+				in = new FileReader(filename);
+			} catch (FileNotFoundException e) {
+				System.out.println("Error: File " + filename + " not found.");
+				return;
+			}
+		}
+
+		try {
+			client.readFrom(in);
+		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
 	}
 }
