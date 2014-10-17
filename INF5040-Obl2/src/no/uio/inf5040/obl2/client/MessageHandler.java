@@ -1,13 +1,11 @@
 package no.uio.inf5040.obl2.client;
 
 public class MessageHandler {
-	Account account;
 
-	MessageHandler(Account account) {
-		this.account = account;
+	MessageHandler() {
 	}
 
-	void handleInput(String command, double value) {		
+	public double handleInput(String command, double value, Account account) {		
 		switch (command) {
 		case "balance":
 			System.out.println("");
@@ -49,5 +47,7 @@ public class MessageHandler {
 			
 
 		}		
+		
+		return account.getBalance();
 	}
 }
