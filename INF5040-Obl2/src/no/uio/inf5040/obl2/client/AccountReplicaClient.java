@@ -19,13 +19,14 @@ public class AccountReplicaClient {
 	private static final int ARG_FILENAME = 3;
 
 	private static final String EXIT = "exit";
+	private static final String SLEEP = "sleep";
 
-	private AccountReplicaDAO accountReplica;
+	private AccountReplicaDAO accountDAO;
 
 	public AccountReplicaClient(String host, int port, String accountName,
 			int numReplicas) throws DAOException {
 
-		accountReplica = new AccountReplicaDAOImpl(host, port, accountName,
+		accountDAO = new AccountReplicaDAOImpl(host, port, accountName,
 				numReplicas);
 	}
 
@@ -35,16 +36,50 @@ public class AccountReplicaClient {
 		String input;
 
 		while ((input = br.readLine()) != null) {
-			if (EXIT.equals(input)) {
-				break;
-			}
-
+			
 			String[] fields = input.split("\\s+");
 			String command = fields[0];
 			double argument = fields.length > 1 ? Double.parseDouble(fields[1])
 					: 0.0;
 
-			// do stuff
+			if (EXIT.equals(command)) {
+				break;
+			}
+
+			else if(SLEEP.equals(command)) { 
+				try {
+					Thread.sleep((long) argument);
+				} catch (InterruptedException e) {
+					System.err.println("Exception e: " + e.getMessage());
+					e.printStackTrace();
+				}
+			}
+			
+			else {			
+				handleInput(command, argument);
+				// do stuff
+			}
+		}
+	}
+	
+	
+	public void handleInput(String command, double value) {
+		switch (command) {
+		case "balance":
+			System.out.println("Current balance: " + accountDAO.getBalance());
+			break;
+
+		case "deposit":
+			accountDAO.deposit(value);
+			break;
+
+		case "withdraw":
+			accountDAO.withdraw(value);
+			break;
+
+		case "addInterest":
+			accountDAO.addInterest(value);
+			break;
 		}
 	}
 
