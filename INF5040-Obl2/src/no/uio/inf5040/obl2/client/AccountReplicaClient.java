@@ -7,9 +7,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 
-import no.uio.inf5040.obl2.client.dao.AccountReplicaDAO;
+import no.uio.inf5040.obl2.client.dao.AccountDAO;
 import no.uio.inf5040.obl2.client.dao.DAOException;
-import no.uio.inf5040.obl2.client.dao.spread.AccountReplicaDAOImpl;
+import no.uio.inf5040.obl2.client.dao.spread.AccountDAOImpl;
 
 public class AccountReplicaClient {
 
@@ -21,12 +21,12 @@ public class AccountReplicaClient {
 	private static final String EXIT = "exit";
 	private static final String SLEEP = "sleep";
 
-	private AccountReplicaDAO accountDAO;
+	private AccountDAO accountDAO;
 
 	public AccountReplicaClient(String host, int port, String accountName,
 			int numReplicas) throws DAOException {
 
-		accountDAO = new AccountReplicaDAOImpl(host, port, accountName,
+		accountDAO = new AccountDAOImpl(host, port, accountName,
 				numReplicas);
 	}
 

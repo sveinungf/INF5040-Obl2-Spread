@@ -1,5 +1,7 @@
 package no.uio.inf5040.obl2.client;
 
+import no.uio.inf5040.obl2.client.model.Account;
+
 public class MessageHandler {
 
 	public MessageHandler() {

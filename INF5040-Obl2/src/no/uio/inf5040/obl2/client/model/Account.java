@@ -1,4 +1,4 @@
-package no.uio.inf5040.obl2.client;
+package no.uio.inf5040.obl2.client.model;
 
 public class Account {
 

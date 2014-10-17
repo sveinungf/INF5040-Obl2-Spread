@@ -3,16 +3,16 @@ package no.uio.inf5040.obl2.client.dao.spread;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import no.uio.inf5040.obl2.client.Account;
-import no.uio.inf5040.obl2.client.dao.AccountReplicaDAO;
+import no.uio.inf5040.obl2.client.dao.AccountDAO;
 import no.uio.inf5040.obl2.client.dao.DAOException;
+import no.uio.inf5040.obl2.client.model.Account;
 import spread.AdvancedMessageListener;
 import spread.SpreadConnection;
 import spread.SpreadException;
 import spread.SpreadGroup;
 import spread.SpreadMessage;
 
-public class AccountReplicaDAOImpl implements AccountReplicaDAO,
+public class AccountDAOImpl implements AccountDAO,
 		AdvancedMessageListener {
 
 	private int numReplicas;
@@ -20,7 +20,7 @@ public class AccountReplicaDAOImpl implements AccountReplicaDAO,
 	private SpreadConnection connection;
 	private SpreadGroup group;
 
-	public AccountReplicaDAOImpl(String host, int port, String accountName,
+	public AccountDAOImpl(String host, int port, String accountName,
 			int numReplicas) throws DAOException {
 
 		String privateName = "privateName";

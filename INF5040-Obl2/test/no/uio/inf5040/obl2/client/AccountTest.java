@@ -1,6 +1,7 @@
 package no.uio.inf5040.obl2.client;
 
 import static org.junit.Assert.*;
+import no.uio.inf5040.obl2.client.model.Account;
 
 import org.junit.Test;
 
