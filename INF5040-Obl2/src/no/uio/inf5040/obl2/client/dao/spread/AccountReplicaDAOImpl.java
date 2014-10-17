@@ -11,21 +11,21 @@ import spread.SpreadGroup;
 
 public class AccountReplicaDAOImpl implements AccountReplicaDAO {
 
-	private static final String GROUP_NAME = "accountReplica";
-
 	private SpreadConnection connection;
 	private SpreadGroup group;
 
 	public AccountReplicaDAOImpl(String host, int port, String accountName,
 			int numReplicas) throws DAOException {
 
+		String privateName = "privateName";
+
 		try {
 			InetAddress server = InetAddress.getByName(host);
 			connection = new SpreadConnection();
-			connection.connect(server, port, accountName, false, true);
+			connection.connect(server, port, privateName, false, true);
 
 			group = new SpreadGroup();
-			group.join(connection, GROUP_NAME);
+			group.join(connection, accountName);
 		} catch (SpreadException | UnknownHostException e) {
 			throw new DAOException(e);
 		}
