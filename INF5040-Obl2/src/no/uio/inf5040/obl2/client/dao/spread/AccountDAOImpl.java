@@ -12,8 +12,12 @@ import spread.SpreadException;
 import spread.SpreadGroup;
 import spread.SpreadMessage;
 
-public class AccountDAOImpl implements AccountDAO,
-		AdvancedMessageListener {
+public class AccountDAOImpl implements AccountDAO, AdvancedMessageListener {
+
+	private static final String SEPARATOR = ":";
+	private static final String ADDINTEREST = "addInterest";
+	private static final String DEPOSIT = "deposit";
+	private static final String WITHDRAW = "withdraw";
 
 	private int numReplicas;
 	private Account account;
@@ -42,7 +46,7 @@ public class AccountDAOImpl implements AccountDAO,
 
 	@Override
 	public void addInterest(double percent) throws DAOException {
-		sendMessage("addInterest\t" + percent);
+		sendMessage(ADDINTEREST + SEPARATOR + percent);
 	}
 
 	@Override
@@ -52,12 +56,12 @@ public class AccountDAOImpl implements AccountDAO,
 
 	@Override
 	public void deposit(double amount) throws DAOException {
-		sendMessage("deposit\t" + amount);
+		sendMessage(DEPOSIT + SEPARATOR + amount);
 	}
 
 	@Override
 	public void withdraw(double amount) throws DAOException {
-		sendMessage("withdraw\t" + amount);
+		sendMessage(WITHDRAW + SEPARATOR + amount);
 	}
 
 	private void sendMessage(String text) throws DAOException {
@@ -84,21 +88,21 @@ public class AccountDAOImpl implements AccountDAO,
 
 	@Override
 	public void regularMessageReceived(SpreadMessage message) {
-		String[] fields = new String(message.getData()).split("\\s+");
+		String[] fields = new String(message.getData()).split(SEPARATOR);
 		String command = fields[0];
 		double argument = fields.length > 1 ? Double.parseDouble(fields[1])
 				: 0.0;
 
 		switch (command) {
-		case "deposit":
+		case DEPOSIT:
 			account.deposit(argument);
 			break;
 
-		case "withdraw":
+		case WITHDRAW:
 			account.withdraw(argument);
 			break;
 
-		case "addInterest":
+		case ADDINTEREST:
 			account.addInterest(argument);
 			break;
 		}
