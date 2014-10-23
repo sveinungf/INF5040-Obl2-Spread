@@ -2,7 +2,9 @@ package no.uio.inf5040.obl2.client.dao.spread;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.Random;
 
 import no.uio.inf5040.obl2.client.dao.AccountDAO;
 import no.uio.inf5040.obl2.client.dao.DAOException;
@@ -32,13 +34,15 @@ public class AccountDAOImpl implements AccountDAO, AdvancedMessageListener {
 	public AccountDAOImpl(String host, int port, String accountName,
 			int requiredReplicas) throws DAOException {
 
-		String privateName = "privateName";
+		Random r = new Random();
+		String privateName = "c-" + r.nextInt(1000);
 		current = Thread.currentThread();
 
 		try {
 			InetAddress server = InetAddress.getByName(host);
 			connection = new SpreadConnection();
 			connection.connect(server, port, privateName, false, true);
+			connection.add(this);
 
 			group = new SpreadGroup();
 			group.join(connection, accountName);
