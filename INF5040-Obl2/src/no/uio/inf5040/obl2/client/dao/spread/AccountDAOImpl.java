@@ -16,11 +16,10 @@ public class AccountDAOImpl implements AccountDAO, AdvancedMessageListener {
 
 	private static final String SEPARATOR = ":";
 	private static final String SETBALANCE = "setBalance";
-	private static final String GETBALANCE = "getBalance";
 	private static final String ADDINTEREST = "addInterest";
 	private static final String DEPOSIT = "deposit";
 	private static final String WITHDRAW = "withdraw";
-	
+
 	private Thread current;
 	private boolean started;
 
@@ -45,7 +44,7 @@ public class AccountDAOImpl implements AccountDAO, AdvancedMessageListener {
 
 			this.requiredReplicas = requiredReplicas;
 			currentReplicas = 0;
-			
+
 			account = new Account();
 			current.wait();
 		} catch (SpreadException | UnknownHostException | InterruptedException e) {
@@ -93,22 +92,22 @@ public class AccountDAOImpl implements AccountDAO, AdvancedMessageListener {
 				+ message.getMembershipInfo().getMembers().length);
 
 		int numMembers = message.getMembershipInfo().getMembers().length;
-		
-		if(numMembers == requiredReplicas && !started) {
+
+		if (numMembers == requiredReplicas && !started) {
 			current.notify();
 			started = true;
 		}
-		
-		if(numMembers > currentReplicas && started) {
+
+		if (numMembers > currentReplicas && started) {
 			// TODO implement joining of new members
 			try {
-				sendMessage(GETBALANCE);
+				sendMessage(SETBALANCE + SEPARATOR + account.getBalance());
 			} catch (DAOException e) {
 				e.printStackTrace();
 			}
 		}
-		
-		currentReplicas = numMembers;			
+
+		currentReplicas = numMembers;
 	}
 
 	@Override
@@ -119,18 +118,10 @@ public class AccountDAOImpl implements AccountDAO, AdvancedMessageListener {
 				: 0.0;
 
 		switch (command) {
-		case GETBALANCE:
-			try {
-				sendMessage(SETBALANCE + SEPARATOR + account.getBalance());
-			} catch (DAOException e) {
-				e.printStackTrace();
-			}
-			break;
-			
 		case SETBALANCE:
 			account.setBalance(argument);
 			break;
-		
+
 		case DEPOSIT:
 			account.deposit(argument);
 			break;
