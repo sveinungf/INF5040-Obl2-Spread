@@ -2,6 +2,7 @@ package no.uio.inf5040.obl2.client.dao.spread;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import no.uio.inf5040.obl2.client.dao.AccountDAO;
 import no.uio.inf5040.obl2.client.dao.DAOException;
@@ -21,7 +22,7 @@ public class AccountDAOImpl implements AccountDAO, AdvancedMessageListener {
 	private static final String WITHDRAW = "withdraw";
 
 	private Thread current;
-	private boolean started;
+	private AtomicBoolean started;
 
 	private int requiredReplicas, currentReplicas;
 	private Account account;
@@ -93,12 +94,12 @@ public class AccountDAOImpl implements AccountDAO, AdvancedMessageListener {
 
 		int numMembers = message.getMembershipInfo().getMembers().length;
 
-		if (numMembers == requiredReplicas && !started) {
+		if (numMembers == requiredReplicas && !started.get()) {
 			current.notify();
-			started = true;
+			started.set(true);
 		}
 
-		if (numMembers > currentReplicas && started) {
+		if (numMembers > currentReplicas && started.get()) {
 			// TODO implement joining of new members
 			try {
 				sendMessage(SETBALANCE + SEPARATOR + account.getBalance());
