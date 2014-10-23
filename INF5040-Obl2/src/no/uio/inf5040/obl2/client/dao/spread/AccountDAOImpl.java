@@ -15,19 +15,25 @@ import spread.SpreadMessage;
 public class AccountDAOImpl implements AccountDAO, AdvancedMessageListener {
 
 	private static final String SEPARATOR = ":";
+	private static final String SETBALANCE = "setBalance";
+	private static final String GETBALANCE = "getBalance";
 	private static final String ADDINTEREST = "addInterest";
 	private static final String DEPOSIT = "deposit";
 	private static final String WITHDRAW = "withdraw";
+	
+	private Thread current;
+	private boolean started;
 
-	private int numReplicas;
+	private int requiredReplicas, currentReplicas;
 	private Account account;
 	private SpreadConnection connection;
 	private SpreadGroup group;
 
 	public AccountDAOImpl(String host, int port, String accountName,
-			int numReplicas) throws DAOException {
+			int requiredReplicas) throws DAOException {
 
 		String privateName = "privateName";
+		current = Thread.currentThread();
 
 		try {
 			InetAddress server = InetAddress.getByName(host);
@@ -37,9 +43,12 @@ public class AccountDAOImpl implements AccountDAO, AdvancedMessageListener {
 			group = new SpreadGroup();
 			group.join(connection, accountName);
 
-			numReplicas = 0;
+			this.requiredReplicas = requiredReplicas;
+			currentReplicas = 0;
+			
 			account = new Account();
-		} catch (SpreadException | UnknownHostException e) {
+			current.wait();
+		} catch (SpreadException | UnknownHostException | InterruptedException e) {
 			throw new DAOException(e);
 		}
 	}
@@ -83,7 +92,23 @@ public class AccountDAOImpl implements AccountDAO, AdvancedMessageListener {
 		System.out.println("New membership message - number of members:"
 				+ message.getMembershipInfo().getMembers().length);
 
-		numReplicas = message.getMembershipInfo().getMembers().length;
+		int numMembers = message.getMembershipInfo().getMembers().length;
+		
+		if(numMembers == requiredReplicas && !started) {
+			current.notify();
+			started = true;
+		}
+		
+		if(numMembers > currentReplicas && started) {
+			// TODO implement joining of new members
+			try {
+				sendMessage(GETBALANCE);
+			} catch (DAOException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		currentReplicas = numMembers;			
 	}
 
 	@Override
@@ -94,6 +119,18 @@ public class AccountDAOImpl implements AccountDAO, AdvancedMessageListener {
 				: 0.0;
 
 		switch (command) {
+		case GETBALANCE:
+			try {
+				sendMessage(SETBALANCE + SEPARATOR + account.getBalance());
+			} catch (DAOException e) {
+				e.printStackTrace();
+			}
+			break;
+			
+		case SETBALANCE:
+			account.setBalance(argument);
+			break;
+		
 		case DEPOSIT:
 			account.deposit(argument);
 			break;
@@ -111,7 +148,7 @@ public class AccountDAOImpl implements AccountDAO, AdvancedMessageListener {
 	/**
 	 * @return
 	 */
-	public int getNumReplicas() {
-		return numReplicas;
+	public int getCurrentReplicas() {
+		return currentReplicas;
 	}
 }
