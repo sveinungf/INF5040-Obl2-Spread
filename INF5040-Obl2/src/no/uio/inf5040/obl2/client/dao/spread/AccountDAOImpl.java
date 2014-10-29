@@ -2,10 +2,10 @@ package no.uio.inf5040.obl2.client.dao.spread;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.Random;
 
+import no.uio.inf5040.obl2.client.AccountReplicaMonitor;
 import no.uio.inf5040.obl2.client.dao.AccountDAO;
 import no.uio.inf5040.obl2.client.dao.DAOException;
 import no.uio.inf5040.obl2.client.model.Account;
@@ -23,8 +23,8 @@ public class AccountDAOImpl implements AccountDAO, AdvancedMessageListener {
 	private static final String DEPOSIT = "deposit";
 	private static final String WITHDRAW = "withdraw";
 
-	private Thread current;
 	private AtomicBoolean started;
+	private AccountReplicaMonitor monitor;
 
 	private int requiredReplicas, currentReplicas;
 	private Account account;
@@ -36,8 +36,9 @@ public class AccountDAOImpl implements AccountDAO, AdvancedMessageListener {
 
 		Random r = new Random();
 		String privateName = "c-" + r.nextInt(1000);
-		current = Thread.currentThread();
+		
 		started = new AtomicBoolean(false);
+		monitor = new AccountReplicaMonitor();
 
 		try {
 			InetAddress server = InetAddress.getByName(host);
@@ -52,10 +53,9 @@ public class AccountDAOImpl implements AccountDAO, AdvancedMessageListener {
 			currentReplicas = 0;
 
 			account = new Account();
-
-			while (!started.get()) {
-				Thread.sleep(100);
-			}
+			
+			monitor.doWait();
+			
 		} catch (SpreadException | UnknownHostException | InterruptedException e) {
 			throw new DAOException(e);
 		}
@@ -112,7 +112,7 @@ public class AccountDAOImpl implements AccountDAO, AdvancedMessageListener {
 		}
 		
 		if (numMembers >= requiredReplicas && !started.get()) {
-			//current.notify();
+			monitor.doNotify();
 			started.set(true);
 		}
 
