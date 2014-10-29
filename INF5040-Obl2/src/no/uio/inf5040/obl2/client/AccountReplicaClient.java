@@ -72,14 +72,17 @@ public class AccountReplicaClient {
 
 			case "deposit":
 				accountDAO.deposit(value);
+				System.out.println("Deposited " + value + " to account");
 				break;
 
 			case "withdraw":
 				accountDAO.withdraw(value);
+				System.out.println("Withdrew " + value + " from account");
 				break;
 
 			case "addInterest":
 				accountDAO.addInterest(value);
+				System.out.println("Added " + value + " percent interest to account");
 				break;
 			}
 		} catch (Exception e) {
