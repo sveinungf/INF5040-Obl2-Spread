@@ -37,6 +37,7 @@ public class AccountDAOImpl implements AccountDAO, AdvancedMessageListener {
 		Random r = new Random();
 		String privateName = "c-" + r.nextInt(1000);
 		current = Thread.currentThread();
+		started = new AtomicBoolean(false);
 
 		try {
 			InetAddress server = InetAddress.getByName(host);
@@ -51,7 +52,10 @@ public class AccountDAOImpl implements AccountDAO, AdvancedMessageListener {
 			currentReplicas = 0;
 
 			account = new Account();
-			current.wait();
+
+			while (!started.get()) {
+				Thread.sleep(100);
+			}
 		} catch (SpreadException | UnknownHostException | InterruptedException e) {
 			throw new DAOException(e);
 		}
@@ -98,11 +102,6 @@ public class AccountDAOImpl implements AccountDAO, AdvancedMessageListener {
 
 		int numMembers = message.getMembershipInfo().getMembers().length;
 
-		if (numMembers == requiredReplicas && !started.get()) {
-			current.notify();
-			started.set(true);
-		}
-
 		if (numMembers > currentReplicas && started.get()) {
 			// TODO implement joining of new members
 			try {
@@ -110,6 +109,11 @@ public class AccountDAOImpl implements AccountDAO, AdvancedMessageListener {
 			} catch (DAOException e) {
 				e.printStackTrace();
 			}
+		}
+		
+		if (numMembers >= requiredReplicas && !started.get()) {
+			//current.notify();
+			started.set(true);
 		}
 
 		currentReplicas = numMembers;
