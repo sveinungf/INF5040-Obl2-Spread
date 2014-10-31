@@ -82,8 +82,8 @@ public class AccountDAOImpl implements AccountDAO, AdvancedMessageListener {
 	}
 
 	private void sendMessage(String text) throws DAOException {
-		SpreadMessage message = new SpreadMessage();
-
+		SpreadMessage message = new SpreadMessage();	
+		
 		message.setData(text.getBytes());
 		message.addGroup(group);
 		message.setAgreed(); // TODO check this
@@ -94,6 +94,7 @@ public class AccountDAOImpl implements AccountDAO, AdvancedMessageListener {
 			throw new DAOException(e);
 		}
 	}
+	
 
 	@Override
 	public void membershipMessageReceived(SpreadMessage message) {
@@ -133,14 +134,17 @@ public class AccountDAOImpl implements AccountDAO, AdvancedMessageListener {
 
 		case DEPOSIT:
 			account.deposit(argument);
+			System.out.println(argument + " deposited to account");
 			break;
 
 		case WITHDRAW:
 			account.withdraw(argument);
+			System.out.println(argument + " withdrawn from account");
 			break;
 
 		case ADDINTEREST:
 			account.addInterest(argument);
+			System.out.println(argument + " percent interest added to account");
 			break;
 		}
 	}
