@@ -12,7 +12,7 @@ public class AccountTest {
 		Account account = new Account();
 		account.setBalance(100.0);
 		account.addInterest(7);
-		
+
 		assertEquals(107.0, account.getBalance(), 0.001);
 	}
 }

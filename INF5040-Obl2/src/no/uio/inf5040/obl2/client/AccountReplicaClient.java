@@ -29,7 +29,8 @@ public class AccountReplicaClient {
 		accountDAO = new AccountDAOImpl(host, port, accountName, numReplicas);
 	}
 
-	private void readFrom(Reader in) throws IOException, InterruptedException, DAOException {
+	private void readFrom(Reader in) throws IOException, InterruptedException,
+			DAOException {
 		BufferedReader br = new BufferedReader(in);
 
 		String input;
@@ -47,7 +48,7 @@ public class AccountReplicaClient {
 
 			else {
 				switch (command) {
-				
+
 				case "balance":
 					System.out.println("Current balance: "
 							+ accountDAO.getBalance());
@@ -72,7 +73,7 @@ public class AccountReplicaClient {
 				default:
 					System.out.println("Invalid command - available commands:");
 					System.out
-							.println("balance\ndeposit\nwithdraw\naddIntereset");
+							.println("balance\ndeposit\nwithdraw\naddInterest");
 
 				}
 			}
@@ -128,7 +129,7 @@ public class AccountReplicaClient {
 		try {
 			client.readFrom(in);
 		} catch (Exception e) {
-			System.err.println("Exception: " + e.getMessage());		
+			System.err.println("Exception: " + e.getMessage());
 			e.printStackTrace();
 		}
 	}

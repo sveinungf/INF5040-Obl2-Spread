@@ -15,15 +15,15 @@ public class Account {
 	public void setBalance(double balance) {
 		this.balance = balance;
 	}
-	
+
 	public void deposit(double amount) {
 		balance += amount;
 	}
-	
+
 	public void withdraw(double amount) {
 		balance -= amount;
 	}
-	
+
 	public void addInterest(double percent) {
 		balance *= 1 + percent / 100;
 	}

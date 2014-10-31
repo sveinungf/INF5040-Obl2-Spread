@@ -80,8 +80,8 @@ public class AccountDAOImpl implements AccountDAO, AdvancedMessageListener {
 	}
 
 	private void sendMessage(String text) throws DAOException {
-		SpreadMessage message = new SpreadMessage();	
-		
+		SpreadMessage message = new SpreadMessage();
+
 		message.setData(text.getBytes());
 		message.addGroup(group);
 		message.setAgreed(); // TODO check this
@@ -92,7 +92,6 @@ public class AccountDAOImpl implements AccountDAO, AdvancedMessageListener {
 			throw new DAOException(e);
 		}
 	}
-	
 
 	@Override
 	public void membershipMessageReceived(SpreadMessage message) {
