@@ -26,11 +26,10 @@ public class AccountReplicaClient {
 	public AccountReplicaClient(String host, int port, String accountName,
 			int numReplicas) throws DAOException {
 
-		accountDAO = new AccountDAOImpl(host, port, accountName,
-				numReplicas);
+		accountDAO = new AccountDAOImpl(host, port, accountName, numReplicas);
 	}
 
-	private void readFrom(Reader in) throws IOException {
+	private void readFrom(Reader in) throws IOException, InterruptedException, DAOException {
 		BufferedReader br = new BufferedReader(in);
 
 		String input;
@@ -46,50 +45,38 @@ public class AccountReplicaClient {
 				break;
 			}
 
-			else if (SLEEP.equals(command)) {
-				try {
+			else {
+				switch (command) {
+				
+				case "balance":
+					System.out.println("Current balance: "
+							+ accountDAO.getBalance());
+					break;
+
+				case "deposit":
+					accountDAO.deposit(argument);
+					break;
+
+				case "withdraw":
+					accountDAO.withdraw(argument);
+					break;
+
+				case "addInterest":
+					accountDAO.addInterest(argument);
+					break;
+
+				case SLEEP:
 					Thread.sleep((long) argument);
-				} catch (InterruptedException e) {
-					System.err.println("Exception e: " + e.getMessage());
-					e.printStackTrace();
+					break;
+
+				default:
+					System.out.println("Invalid command - available commands:");
+					System.out
+							.println("balance\ndeposit\nwithdraw\naddIntereset");
+
 				}
 			}
-
-			else {
-				handleInput(command, argument);
-				// do stuff
-			}
 		}
-	}
-
-	public void handleInput(String command, double value) {
-		try {
-			switch (command) {
-			case "balance":
-				System.out.println("Current balance: "
-						+ accountDAO.getBalance());
-				break;
-
-			case "deposit":
-				accountDAO.deposit(value);
-				System.out.println("Deposited " + value + " to account");
-				break;
-
-			case "withdraw":
-				accountDAO.withdraw(value);
-				System.out.println("Withdrew " + value + " from account");
-				break;
-
-			case "addInterest":
-				accountDAO.addInterest(value);
-				System.out.println("Added " + value + " percent interest to account");
-				break;
-			}
-		} catch (Exception e) {
-			System.err.println("Exception: " + e.getMessage());
-			e.printStackTrace();
-		}
-
 	}
 
 	public static void main(String[] args) {
@@ -112,6 +99,8 @@ public class AccountReplicaClient {
 		int numReplicas = Integer.parseInt(args[ARG_REPLICAS]);
 		String filename = args.length > ARG_FILENAME ? args[ARG_FILENAME]
 				: null;
+
+		System.out.println("Host: " + host + " port: " + port);
 
 		AccountReplicaClient client;
 		try {
@@ -138,8 +127,8 @@ public class AccountReplicaClient {
 
 		try {
 			client.readFrom(in);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
+		} catch (Exception e) {
+			System.err.println("Exception: " + e.getMessage());		
 			e.printStackTrace();
 		}
 	}
