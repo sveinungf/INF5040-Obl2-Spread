@@ -2,7 +2,6 @@ package no.uio.inf5040.obl2.client.dao.spread;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.Random;
 
 import no.uio.inf5040.obl2.client.AccountReplicaMonitor;
@@ -23,7 +22,7 @@ public class AccountDAOImpl implements AccountDAO, AdvancedMessageListener {
 	private static final String DEPOSIT = "deposit";
 	private static final String WITHDRAW = "withdraw";
 
-	private AtomicBoolean started;
+	private boolean started;
 	private AccountReplicaMonitor monitor;
 
 	private int requiredReplicas, currentReplicas;
@@ -36,9 +35,10 @@ public class AccountDAOImpl implements AccountDAO, AdvancedMessageListener {
 
 		Random r = new Random();
 		String privateName = "c-" + r.nextInt(1000);
-		
-		started = new AtomicBoolean(false);
+
+		started = false;
 		monitor = new AccountReplicaMonitor();
+		account = new Account();
 
 		try {
 			InetAddress server = InetAddress.getByName(host);
@@ -52,10 +52,8 @@ public class AccountDAOImpl implements AccountDAO, AdvancedMessageListener {
 			this.requiredReplicas = requiredReplicas;
 			currentReplicas = 0;
 
-			account = new Account();
-			
 			monitor.doWait();
-			
+
 		} catch (SpreadException | UnknownHostException | InterruptedException e) {
 			throw new DAOException(e);
 		}
@@ -102,18 +100,17 @@ public class AccountDAOImpl implements AccountDAO, AdvancedMessageListener {
 
 		int numMembers = message.getMembershipInfo().getMembers().length;
 
-		if (numMembers > currentReplicas && started.get()) {
-			// TODO implement joining of new members
+		if (numMembers > currentReplicas && started) {
 			try {
 				sendMessage(SETBALANCE + SEPARATOR + account.getBalance());
 			} catch (DAOException e) {
 				e.printStackTrace();
 			}
 		}
-		
-		if (numMembers >= requiredReplicas && !started.get()) {
+
+		if (numMembers >= requiredReplicas && !started) {
 			monitor.doNotify();
-			started.set(true);
+			started = true;
 		}
 
 		currentReplicas = numMembers;
@@ -143,12 +140,5 @@ public class AccountDAOImpl implements AccountDAO, AdvancedMessageListener {
 			account.addInterest(argument);
 			break;
 		}
-	}
-
-	/**
-	 * @return
-	 */
-	public int getCurrentReplicas() {
-		return currentReplicas;
 	}
 }
