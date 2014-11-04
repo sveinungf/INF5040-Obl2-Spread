@@ -61,7 +61,7 @@ public class AccountDAOImpl implements AccountDAO, AdvancedMessageListener {
 
 	@Override
 	public void addInterest(double percent) throws DAOException {
-		sendMessage(ADDINTEREST + SEPARATOR + percent);
+		sendMessage(ADDINTEREST + SEPARATOR + percent, ServiceType.AGREED);
 	}
 
 	@Override
@@ -71,20 +71,41 @@ public class AccountDAOImpl implements AccountDAO, AdvancedMessageListener {
 
 	@Override
 	public void deposit(double amount) throws DAOException {
-		sendMessage(DEPOSIT + SEPARATOR + amount);
+		sendMessage(DEPOSIT + SEPARATOR + amount, ServiceType.AGREED);
 	}
 
 	@Override
 	public void withdraw(double amount) throws DAOException {
-		sendMessage(WITHDRAW + SEPARATOR + amount);
+		sendMessage(WITHDRAW + SEPARATOR + amount, ServiceType.AGREED);
 	}
 
-	private void sendMessage(String text) throws DAOException {
+	private void sendMessage(String text, ServiceType serviceType)
+			throws DAOException {
 		SpreadMessage message = new SpreadMessage();
 
 		message.setData(text.getBytes());
 		message.addGroup(group);
-		message.setAgreed(); // TODO check this
+
+		switch (serviceType) {
+		case AGREED:
+			message.setAgreed();
+			break;
+		case CAUSAL:
+			message.setCausal();
+			break;
+		case FIFO:
+			message.setFifo();
+			break;
+		case RELIABLE:
+			message.setReliable();
+			break;
+		case SAFE:
+			message.setSafe();
+			break;
+		case UNRELIABLE:
+			message.setUnreliable();
+			break;
+		}
 
 		try {
 			connection.multicast(message);
@@ -102,7 +123,8 @@ public class AccountDAOImpl implements AccountDAO, AdvancedMessageListener {
 
 		if (numMembers > currentReplicas && started) {
 			try {
-				sendMessage(SETBALANCE + SEPARATOR + account.getBalance());
+				sendMessage(SETBALANCE + SEPARATOR + account.getBalance(),
+						ServiceType.AGREED);
 			} catch (DAOException e) {
 				e.printStackTrace();
 			}
