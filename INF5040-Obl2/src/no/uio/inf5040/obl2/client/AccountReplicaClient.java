@@ -29,6 +29,16 @@ public class AccountReplicaClient {
 		accountDAO = new AccountDAOImpl(host, port, accountName, numReplicas);
 	}
 
+	/**
+	 * Reads commands from a {@link Reader} source until the {@code exit}
+	 * command is given, or the input is {@code null}.
+	 * 
+	 * @param in
+	 *            - The {@link Reader} source.
+	 * @throws IOException
+	 * @throws InterruptedException
+	 * @throws DAOException
+	 */
 	private void readFrom(Reader in) throws IOException, InterruptedException,
 			DAOException {
 		BufferedReader br = new BufferedReader(in);

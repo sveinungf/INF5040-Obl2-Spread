@@ -1,5 +1,8 @@
 package no.uio.inf5040.obl2.client.model;
 
+/**
+ * A class representing a bank account.
+ */
 public class Account {
 
 	private double balance;

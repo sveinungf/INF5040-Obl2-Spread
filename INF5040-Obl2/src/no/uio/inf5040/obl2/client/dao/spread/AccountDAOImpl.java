@@ -14,6 +14,10 @@ import spread.SpreadException;
 import spread.SpreadGroup;
 import spread.SpreadMessage;
 
+/**
+ * An implementation for handling a bank account using replicas in a Spread
+ * network.
+ */
 public class AccountDAOImpl implements AccountDAO, AdvancedMessageListener {
 
 	private static final String SEPARATOR = ":";
@@ -30,6 +34,20 @@ public class AccountDAOImpl implements AccountDAO, AdvancedMessageListener {
 	private SpreadConnection connection;
 	private SpreadGroup group;
 
+	/**
+	 * Connects to a Spread group, and blocks until the number of replicas in
+	 * the group has reached the required amount of replicas.
+	 * 
+	 * @param host
+	 *            - Spread daemon host.
+	 * @param port
+	 *            - Spread daemon port.
+	 * @param accountName
+	 *            - The name of the Spread group.
+	 * @param requiredReplicas
+	 *            - The amount of replicas required.
+	 * @throws DAOException
+	 */
 	public AccountDAOImpl(String host, int port, String accountName,
 			int requiredReplicas) throws DAOException {
 
@@ -38,6 +56,9 @@ public class AccountDAOImpl implements AccountDAO, AdvancedMessageListener {
 
 		started = false;
 		monitor = new AccountReplicaMonitor();
+
+		this.requiredReplicas = requiredReplicas;
+		currentReplicas = 0;
 		account = new Account();
 
 		try {
@@ -49,11 +70,7 @@ public class AccountDAOImpl implements AccountDAO, AdvancedMessageListener {
 			group = new SpreadGroup();
 			group.join(connection, accountName);
 
-			this.requiredReplicas = requiredReplicas;
-			currentReplicas = 0;
-
 			monitor.doWait();
-
 		} catch (SpreadException | UnknownHostException | InterruptedException e) {
 			throw new DAOException(e);
 		}
@@ -79,6 +96,15 @@ public class AccountDAOImpl implements AccountDAO, AdvancedMessageListener {
 		sendMessage(WITHDRAW + SEPARATOR + amount, ServiceType.AGREED);
 	}
 
+	/**
+	 * Multicasts a message to all clients in the group.
+	 * 
+	 * @param text
+	 *            - The message text.
+	 * @param serviceType
+	 *            - The message service type.
+	 * @throws DAOException
+	 */
 	private void sendMessage(String text, ServiceType serviceType)
 			throws DAOException {
 		SpreadMessage message = new SpreadMessage();
