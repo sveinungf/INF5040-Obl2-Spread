@@ -92,8 +92,9 @@ public class AccountReplicaClient {
 
 	public static void main(String[] args) {
 		if (args == null || args.length <= ARG_REPLICAS) {
-			System.out.println("Usage: java -jar client.jar <server address> "
-					+ "<account name> <number of replicas> [file name]");
+			System.out.println("Usage: java -jar accountReplica.jar "
+					+ "<server address> <account name> <number of replicas>"
+					+ " [file name]");
 			return;
 		}
 
